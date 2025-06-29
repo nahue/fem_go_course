@@ -11,8 +11,8 @@ import (
 )
 
 func Open() (*sql.DB, error) {
-	host := "localhost"
-	db, err := sql.Open("pgx", fmt.Sprintf("host=%s port=5432 user=postgres password=postgres dbname=postgres sslmode=disable", host))
+
+	db, err := sql.Open("pgx", "host=localhost port=5432 user=postgres password=postgres dbname=postgres sslmode=disable")
 	db.SetMaxOpenConns(10)
 	db.SetMaxIdleConns(5)
 	db.SetConnMaxIdleTime(time.Minute)
@@ -20,7 +20,7 @@ func Open() (*sql.DB, error) {
 		return nil, fmt.Errorf("db: open %w", err)
 	}
 
-	fmt.Printf("Connected to database %s:%d\n", host, 5432)
+	fmt.Printf("Connected to database %s:%d\n", "localhost", 5432)
 
 	return db, nil
 }
