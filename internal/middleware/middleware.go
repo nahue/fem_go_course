@@ -12,8 +12,8 @@ import (
 )
 
 type UserMiddleware struct {
-	userStore store.UserStore
-	logger    *log.Logger
+	UserStore store.UserStore
+	Logger    *log.Logger
 }
 
 type ContextKey string
@@ -54,7 +54,7 @@ func (um *UserMiddleware) Authenticate(next http.Handler) http.Handler {
 		}
 
 		token := headerParts[1]
-		user, err := um.userStore.GetUserToken(tokens.ScopeAuth, token)
+		user, err := um.UserStore.GetUserToken(tokens.ScopeAuth, token)
 		if err != nil {
 			utils.WriteJSON(w, http.StatusUnauthorized, utils.Envelope{"error": "invalid authorization token"})
 			return
@@ -68,4 +68,15 @@ func (um *UserMiddleware) Authenticate(next http.Handler) http.Handler {
 		r = SetUser(r, user)
 		next.ServeHTTP(w, r)
 	})
+}
+
+func (um *UserMiddleware) RequireUser(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user := GetUser(r)
+		if user.IsAnonymous() {
+			utils.WriteJSON(w, http.StatusUnauthorized, utils.Envelope{"error": "you must be logged in to access this resource"})
+			return
+		}
+		next.ServeHTTP(w, r)
+	}
 }
